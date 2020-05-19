@@ -1,0 +1,23 @@
+{
+    "name": "kanvas/magic-import",
+    "description": "Tool to import in bulk from an excel",
+    "license": "MIT",
+    "authors": [{
+        "name": "dasdo",
+        "email": "dasdo1@mctekk.com"
+    }],
+    "require": {
+        "php": ">=7.2"
+    },
+    "autoload": {
+        "classmap": [
+            "src/",
+            "src/Libraries/",
+            "src/Libraries/Columns/"
+        ],
+        "psr-0": {
+            "Kanvas\\MagicImport\\": "src/",
+            "Kanvas\\MagicImport\\Libraries\\Columns\\": "src/Libraries/Columns/"
+        }
+    }
+}
