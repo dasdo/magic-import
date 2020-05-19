@@ -1,7 +1,6 @@
 <?php namespace Kanvas\MagicImport\Libraries\Columns;
 
-abstract class Columns 
+interface Columns 
 {
-    abstract public function get();
-    abstract public function getStructure();
+    public function getStructure();
 }
