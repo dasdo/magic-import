@@ -13,11 +13,12 @@
         "classmap": [
             "src/",
             "src/Libraries/",
-            "src/Libraries/Columns/"
+            "src/Contracts/"
         ],
         "psr-0": {
             "Kanvas\\MagicImport\\": "src/",
-            "Kanvas\\MagicImport\\Libraries\\Columns\\": "src/Libraries/Columns/"
+            "Kanvas\\MagicImport\\Libraries\\": "src/Libraries/",
+            "Kanvas\\MagicImport\\Contracts\\": "src/Contracts/"
         }
     }
 }

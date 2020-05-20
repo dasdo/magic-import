@@ -1,12 +1,13 @@
-<?php namespace Kanvas\MagicImport\Libraries\Columns;
+<?php namespace Kanvas\MagicImport\Libraries;
 
 use Phalcon\DI\Injectable;
 use Phalcon\Mvc\Model;
+use Kanvas\MagicImport\Contracts\ColumnsInterface;
 
 /**
  * Class Structure
  */
-class Structure extends Injectable implements Columns 
+class Structure extends Injectable implements ColumnsInterface 
 {
     /**
      * @var Phalcon\Mvc\Model

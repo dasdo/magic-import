@@ -1,8 +1,8 @@
 <?php namespace Kanvas\MagicImport\Traits;
 
-use Kanvas\MagicImport\Libraries\Columns\Structure;
+use Kanvas\MagicImport\Libraries\Structure;
 
-trait Imports
+trait ImportsTrait
 {
     /**
      * @return Phalcon\Http\Response
