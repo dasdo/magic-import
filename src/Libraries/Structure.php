@@ -1,4 +1,6 @@
-<?php namespace Kanvas\MagicImport\Libraries;
+<?php 
+
+namespace Kanvas\MagicImport\Libraries;
 
 use Phalcon\DI\Injectable;
 use Phalcon\Mvc\Model;
@@ -56,7 +58,7 @@ class Structure extends Injectable implements ColumnsInterface
      * Get fields by models
      * @return array $raw
      */
-    public function getFieldsByModel()
+    public function getFieldsByModel() : array
     {
         $raw = [];
         /**
@@ -94,7 +96,7 @@ class Structure extends Injectable implements ColumnsInterface
      * @param Phalcon\Mvc\Model $model
      * @return array $raw
      */
-    public function setStructure(Model $model)
+    public function setStructure(Model $model): array
     {
         $raw = [];
         

@@ -1,4 +1,6 @@
-<?php namespace Kanvas\MagicImport\Contracts;
+<?php 
+
+namespace Kanvas\MagicImport\Contracts;
 
 use Kanvas\MagicImport\Libraries\Structure;
 
