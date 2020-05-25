@@ -5,6 +5,7 @@ namespace Kanvas\MagicImport\Libraries;
 use Phalcon\DI\Injectable;
 use Phalcon\Mvc\Model;
 use Kanvas\MagicImport\Contracts\ColumnsInterface;
+use Phalcon\Mvc\Model\Relation;
 
 /**
  * Class Structure
@@ -81,12 +82,20 @@ class Structure extends Injectable implements ColumnsInterface
              */
             $relationshipName = $relations->getReferencedModel();
 
-            $class = explode("\\",$relationshipName);
+            $relationshipClass = explode("\\",$relationshipName);
+
             /**
              * Get Structure for the relationship class
              */
-            $raw[end($class)] = $this->setStructure(new $relationshipName);
+            $raw[end($relationshipClass)] = $this->setStructure(new $relationshipName);
+
+            $relationships[$relationshipName] = $this->getRelationshipsKeys($relations);
         }
+
+        /**
+         * Set relationship
+         */
+        $raw[end($class)]['relationships'] = $relationships;
 
         return $raw;
     }
@@ -110,5 +119,41 @@ class Structure extends Injectable implements ColumnsInterface
         }
 
         return $raw;
+    }
+
+    /**
+     * get primary keys from Relationships
+     * @param $relationships
+     */
+    public function getRelationshipsKeys(Relation $relationships) : array
+    {
+        $keys = [];
+
+        /**
+         * Name of relationship
+         * @var string
+         */
+        $keys['relationshipName'] = $relationships->getReferencedModel();
+
+        /**
+         * Relationships Types
+         * 1 => hasOne
+         * 2 => hasMany
+         * @var int
+         */
+        $keys['getType'] = $relationships->getType();
+
+        /**
+         * Primary key from the models
+         * @var string
+         */
+        $keys['primaryKey'] = $relationships->getFields();
+
+        /**
+         * relationships
+         */
+        $keys['relationshipsKey'] = $relationships->getReferencedFields();
+
+        return $keys;
     }
 }
