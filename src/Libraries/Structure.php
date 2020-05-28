@@ -23,6 +23,11 @@ class Structure extends Injectable implements ColumnsInterface
     public $fields;
 
     /**
+     * @var array
+     */
+    public $relationship;
+
+    /**
      * @var string
      */
     public $class_base;
@@ -30,11 +35,13 @@ class Structure extends Injectable implements ColumnsInterface
     /**
      * @param Phalcon\Mvc\Model $model
      * @param array $fields
+     * @param array $relationship
      */
-    function __construct(Model $model, $fields = null)
+    function __construct(Model $model, $fields = null, $relationship = [])
     {
         $this->model = $model; 
-        $this->fields = $fields; 
+        $this->fields = $fields;
+        $this->relationship = $relationship;
         $this->class_base = get_class($model); 
     }
 
@@ -95,7 +102,7 @@ class Structure extends Injectable implements ColumnsInterface
         /**
          * Set relationship
          */
-        $raw[end($class)]['relationships'] = $relationships;
+        $raw[end($class)]['relationships'] = array_merge($relationships, $this->relationship);
 
         return $raw;
     }

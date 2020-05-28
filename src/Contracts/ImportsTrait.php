@@ -13,7 +13,7 @@ trait ImportsTrait
      */
     public function structure()
     {
-        $structure = new Structure($this->model);
+        $structure = isset($this->structure) ? $this->structure : new Structure($this->model);
         $array = $structure->getStructure();
 
         return $this->response($array);
@@ -38,7 +38,7 @@ trait ImportsTrait
             throw new Exception("mapping array is required", 1);
         }
 
-        $structure = new Structure($this->model);
+        $structure = isset($this->structure) ? $this->structure : new Structure($this->model);
         $imports = new Imports($structure, (Boolean) $post['commit']);
         $results = $imports->processData($post);
 

@@ -6,6 +6,7 @@ use Kanvas\MagicImport\Contracts\ColumnsInterface;
 use Phalcon\DI\Injectable;
 use ReflectionClass;
 use Exception;
+use Phalcon\Mvc\Model;
 
 /**
  * Class Structure
@@ -56,13 +57,17 @@ class Imports extends Injectable
         $processData = $this->structureData($data);
 
         $this->db->begin();
-        $return = [];
+        $return = [
+            "errors" => [],
+            "success" => [],
+        ];
         foreach ($processData as $modelData) {
             try {
                 $models = $this->save($modelData);
-                $return[] = $models;
+                $relationships = $this->setRelationships($models);
+                $return['success'][] = array_merge($models,$relationships);
             } catch (Exception $e) {
-                
+                $return['errors'][] = $e->getMenssages();
             }
         }
 
@@ -83,7 +88,8 @@ class Imports extends Injectable
             $obj = new $model();
             $obj->assign($data);
             $obj->save();
-            $return[] = $obj;
+            
+            $return[$this->getClassName($obj)] = $obj;
         }
         return $return;
     }
@@ -139,5 +145,98 @@ class Imports extends Injectable
         }
 
         return $processData;
+    }
+
+    /**
+     * create relationships between all models
+     * @param array $models
+     * @return array $models
+     */
+    public function setRelationships(array $models) : array
+    {
+        /**
+         * Get the import structure
+         */
+        $structures = $this->structure->getStructure();
+        $returns = [];
+        foreach ($structures as $modelName => $data) {
+            if(!isset($data['relationships'])){
+                continue;
+            }
+
+            if(!isset($models[$modelName])){
+                continue;
+            }
+            
+            /**
+             * @var all-models $models
+             * @var PrincipalModel $models[$modelName]
+             * @var relationships $data['relationships']
+             */
+            $saveRelationships = $this->saveRelationships($models, $models[$modelName], $data['relationships']);
+            $returns = array_merge($returns, $saveRelationships);
+        }
+
+        return $returns;
+    }
+
+    /**
+     * Save relationships
+     * @param array $models
+     * @param Model $model
+     * @param array $relationships
+     * @return array $returns
+     */
+    public function saveRelationships($models, Model $model, $relationships) : array
+    {
+        $returns = [];
+        foreach ($models as $class => $obj) {
+            $className = get_class($obj);
+           
+            if(!isset($relationships[$className])){
+                continue;
+            }
+
+            $primaryKey = $relationships[$className]['primaryKey'];
+            $relationshipsKey = $relationships[$className]['relationshipsKey'];
+
+            switch ($relationships[$className]['getType']) {
+                case 1:
+                    $model->{$primaryKey} = $obj->{$relationshipsKey};
+                    $model->save();
+                    $returns[$this->getClassName($model)] = $model;
+                break;
+                case 2:
+                    $obj->{$relationshipsKey} = $model->{$primaryKey};
+                    $obj->save();
+                    $returns[$this->getClassName($obj)] = $obj;
+                break;
+                case 3:
+                    $intermediateModel = $relationships[$className]['intermediateModel'];
+                    $intermediateFields = $relationships[$className]['intermediateFields'];
+                    $intermediateReferencedField = $relationships[$className]['intermediateReferencedField'];
+                    $newObj = new $intermediateModel;
+                    $newObj->{$intermediateFields} = $model->{$primaryKey};
+                    $newObj->{$intermediateReferencedField} = $obj->{$relationshipsKey};
+                    $newObj->save();
+                    $returns[$this->getClassName($newObj)] = $newObj;
+                break;
+                default:
+                    throw new Exception("Error Processing Request", 1);
+                break;
+            }
+        }
+
+        return $returns;
+    }
+
+    public function getClassName($obj)
+    {
+        /**
+         * Get namespace and class name
+         */
+        $class = explode("\\",get_class($obj));
+
+        return end($class);
     }
 }
