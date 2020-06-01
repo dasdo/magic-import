@@ -67,11 +67,15 @@ class Imports extends Injectable
                 $relationships = $this->setRelationships($models);
                 $return['success'][] = array_merge($models,$relationships);
             } catch (Exception $e) {
-                $return['errors'][] = $e->getMenssages();
+                $return['errors'][] = $e->getMessage();
             }
         }
 
-        $this->finish();
+        if($this->commit){
+            $this->db->commit();
+        }else{
+            $this->db->rollback();
+        }
 
         return $return;
     }
@@ -92,18 +96,6 @@ class Imports extends Injectable
             $return[$this->getClassName($obj)] = $obj;
         }
         return $return;
-    }
-
-    /**
-     * we define if it will be a preview or if we save in the db
-     */
-    private function finish() : void
-    {
-        if($this->commit){
-            $this->db->commit();
-            return;
-        }
-        $this->db->rollback();
     }
 
     /**

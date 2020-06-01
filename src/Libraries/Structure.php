@@ -37,7 +37,7 @@ class Structure extends Injectable implements ColumnsInterface
      * @param array $fields
      * @param array $relationship
      */
-    function __construct(Model $model, $fields = null, $relationship = [])
+    function __construct(Model $model, $fields = [], $relationship = [])
     {
         $this->model = $model; 
         $this->fields = $fields;
@@ -51,15 +51,8 @@ class Structure extends Injectable implements ColumnsInterface
      */
     public function getStructure() : array
     {
-        $fields = $this->fields;
-
-        /**
-         * If the user does not send data, we take it from the model
-         */
-        if (is_null($fields)) {
-            $fields = $this->getFieldsByModel();
-        }
-        return $fields;
+        $fields = $this->getFieldsByModel();
+        return array_merge($fields, $this->fields);
     }
 
     /**
@@ -160,6 +153,13 @@ class Structure extends Injectable implements ColumnsInterface
          * relationships
          */
         $keys['relationshipsKey'] = $relationships->getReferencedFields();
+
+        /**
+         * Variable that defines if it is unique
+         */
+        //$model = new $keys['relationshipName'];
+        //$pk = $model->getModelsMetaData()->getPrimaryKeyAttributes($model);
+        //$keys['unique'] = $pk;
 
         return $keys;
     }
