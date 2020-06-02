@@ -90,8 +90,13 @@ class Imports extends Injectable
         $return = [];
         foreach ($modelData as $model => $data) {
             $obj = new $model();
-            $obj->assign($data);
-            $obj->save();
+
+            if(method_exists($obj,'findFirstOrCreate')){
+                $obj = $model::findFirstOrCreate(null, $data);
+            }else{
+                $obj->assign($data);
+                $obj->save();
+            }
             
             $return[$this->getClassName($obj)] = $obj;
         }
