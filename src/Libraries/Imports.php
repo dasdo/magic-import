@@ -31,18 +31,11 @@ class Imports extends Injectable
     public $namespaceModel;
 
     /**
-     * db connect
-     * @var string
-     */
-    public $db;
-
-    /**
      * @param Phalcon\Mvc\Model $model
      * @param array $fields
      */
     function __construct(ColumnsInterface $structure, bool $commit)
     {
-        $this->db = $this->di->get('db');
         $this->structure = $structure;
         $this->commit = $commit;
         $this->namespaceModel = (new ReflectionClass($this->structure->model))->getNamespaceName();
@@ -55,8 +48,8 @@ class Imports extends Injectable
     public function processData(array $data)
     {
         $processData = $this->structureData($data);
-
-        $this->db->begin();
+        $db = $this->di->get('db');
+        $db->begin();
         $return = [
             "errors" => [],
             "success" => [],
@@ -65,16 +58,16 @@ class Imports extends Injectable
             try {
                 $models = $this->save($modelData);
                 $relationships = $this->setRelationships($models);
-                $return['success'][] = array_merge($models,$relationships);
+                $return['success'][] = $this->getReturn(array_merge($models,$relationships));
             } catch (Exception $e) {
                 $return['errors'][] = $e->getMessage();
             }
         }
 
         if($this->commit){
-            $this->db->commit();
+            $db->commit();
         }else{
-            $this->db->rollback();
+            $db->rollback();
         }
 
         return $return;
@@ -235,5 +228,17 @@ class Imports extends Injectable
         $class = explode("\\",get_class($obj));
 
         return end($class);
+    }
+
+    public function getReturn($models)
+    {
+        $return = [];
+
+        foreach ($models as $model => $data) {
+            foreach ($data as $field => $value) {
+                $return["{$model}.{$field}"] = $value;
+            }
+        }
+        return $return;
     }
 }
