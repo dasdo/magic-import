@@ -108,6 +108,9 @@ class Imports extends Injectable
         $processData = [];
 
         foreach ($fileValues as $key => $data) {
+            if(!is_array($data)){
+                continue;
+            }
             $processData[] = $this->getStructureData($data, $maps);
         }
 

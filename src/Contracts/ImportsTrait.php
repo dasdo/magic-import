@@ -30,11 +30,11 @@ trait ImportsTrait
             throw new Exception("Commit status is required", 1);
         }
 
-        if(!isset($post['fileValues'])){
+        if(!isset($post['fileValues']) || !is_array($post['fileValues']) || count($post['fileValues']) == 0){
             throw new Exception("fileValues array is required", 1);
         }
 
-        if(!isset($post['mapping'])){
+        if(!isset($post['mapping']) || !is_array($post['mapping']) || count($post['mapping']) == 0){
             throw new Exception("mapping array is required", 1);
         }
 
