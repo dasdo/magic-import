@@ -33,6 +33,21 @@ class Structure extends Injectable implements ColumnsInterface
     public $class_base;
 
     /**
+     * @var string
+     */
+    public $raw;
+
+    /**
+     * @var array
+     */
+    public $exclude_fields = [
+        'is_deleted',
+        'created_at',
+        'updated_at',
+        'id',
+    ];
+
+    /**
      * @param Phalcon\Mvc\Model $model
      * @param array $fields
      * @param array $relationship
@@ -61,7 +76,7 @@ class Structure extends Injectable implements ColumnsInterface
      */
     public function getFieldsByModel() : array
     {
-        $raw = [];
+        $this->raw = [];
         /**
          * Get namespace and class name
          */
@@ -70,12 +85,27 @@ class Structure extends Injectable implements ColumnsInterface
         /**
          * Get Structure for the main class
          */
-        $raw[end($class)] = $this->setStructure($this->model);
+        $this->raw[end($class)] = $this->setStructure($this->model);
 
+        /**
+         * Set relationship
+         */
+        $relationships = $this->setRelationships($this->class_base);
+        
+        $externalRelationship = isset($this->relationship[end($class)]) ? $this->relationship[end($class)] : [];
+
+        $this->raw[end($class)]['relationships'] = array_merge($relationships, $externalRelationship);
+
+        return $this->raw;
+    }
+
+    public function setRelationships($classBase, $x = true)
+    {
+        $relationships = [];
         /**
          * Get relations from the models
          */
-        foreach ($this->modelsManager->getRelations($this->class_base) as $relations) {
+        foreach ($this->modelsManager->getRelations($classBase) as $relations) {
             /**
              * Name of relationship
              * @var string
@@ -87,17 +117,21 @@ class Structure extends Injectable implements ColumnsInterface
             /**
              * Get Structure for the relationship class
              */
-            $raw[end($relationshipClass)] = $this->setStructure(new $relationshipName);
+            $this->raw[end($relationshipClass)] = $this->setStructure(new $relationshipName);
 
             $relationships[$relationshipName] = $this->getRelationshipsKeys($relations);
+
+            /**
+             * @todo fixed
+             */
+            if($x && $classBase != $relationshipName){
+                $relationshipFromRelationship = $this->setRelationships($relationshipName, false);
+                $externalRelationship = isset($this->relationship[end($relationshipClass)]) ? $this->relationship[end($relationshipClass)] : [];
+
+                $this->raw[end($relationshipClass)]['relationships'] = array_merge($relationshipFromRelationship, $externalRelationship);
+            }
         }
-
-        /**
-         * Set relationship
-         */
-        $raw[end($class)]['relationships'] = array_merge($relationships, $this->relationship);
-
-        return $raw;
+        return $relationships;
     }
 
     /**
@@ -110,6 +144,9 @@ class Structure extends Injectable implements ColumnsInterface
         $raw = [];
         
         foreach ($model->toArray() as $tbname => $value) {
+            if(in_array($tbname, $this->exclude_fields)){
+                continue;
+            }
             $raw['columns'][] = [
                 "field" => $tbname,
                 "type" => gettype($tbname),
@@ -117,7 +154,7 @@ class Structure extends Injectable implements ColumnsInterface
                 "label" => ucfirst(str_replace('_',' ', $tbname))
             ];
         }
-
+        
         return $raw;
     }
 
