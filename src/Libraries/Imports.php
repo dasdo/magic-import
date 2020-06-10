@@ -48,6 +48,7 @@ class Imports extends Injectable
     public function processData(array $data)
     {
         $processData = $this->structureData($data);
+
         $db = $this->di->get('db');
         $db->begin();
         $return = [
@@ -88,7 +89,7 @@ class Imports extends Injectable
                 $obj = $model::findFirstOrCreate(null, $data);
             }else{
                 $obj->assign($data);
-                $obj->save();
+                $obj->saveOrFail();
             }
             
             $return[$this->getClassName($obj)] = $obj;
@@ -194,6 +195,7 @@ class Imports extends Injectable
             $relationshipsKey = $relationships[$className]['relationshipsKey'];
 
             switch ($relationships[$className]['getType']) {
+                case 0:
                 case 1:
                     $model->{$primaryKey} = $obj->{$relationshipsKey};
                     $model->save();
